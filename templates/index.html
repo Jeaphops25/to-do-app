@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mini To-Do List</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: auto; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 8px; background: #f0f0f0; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        button { background: red; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Mini To-Do List</h1>
+    <input id="taskInput" placeholder="Nouvelle tâche" />
+    <button onclick="addTask()">Ajouter</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        async function fetchTasks() {
+            const res = await fetch('/tasks');
+            const tasks = await res.json();
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = task.title;
+                const btn = document.createElement('button');
+                btn.textContent = 'Supprimer';
+                btn.onclick = () => deleteTask(task.id);
+                li.appendChild(btn);
+                list.appendChild(li);
+            });
+        }
+
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            if (!input.value) return alert('Merci de saisir une tâche');
+            await fetch('/tasks', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title: input.value})
+            });
+            input.value = '';
+            fetchTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch(`/tasks/${id}`, { method: 'DELETE' });
+            fetchTasks();
+        }
+
+        fetchTasks();
+    </script>
+</body>
+</html> 
